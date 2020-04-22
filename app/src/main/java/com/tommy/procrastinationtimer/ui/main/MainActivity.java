@@ -1,11 +1,12 @@
 package com.tommy.procrastinationtimer.ui.main;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -14,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.tommy.procrastinationtimer.R;
 import com.tommy.procrastinationtimer.adapters.RecyclerAdapter;
 import com.tommy.procrastinationtimer.models.Task;
@@ -22,7 +24,7 @@ import com.tommy.procrastinationtimer.viewmodels.MainActivityViewModel;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     public static final String EXTRA_TASK_TITLE = "com.tommy.procrastinationtimer.task.TITLE";
     public static final String EXTRA_TASK_TIME = "com.tommy.procrastinationtimer.task.TIME";
@@ -32,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RecyclerView.Adapter adapter;
     private ProgressBar progressBar;
+    private NavigationView navigationView;
     private MainActivityViewModel mainActivityViewModel;
 
     @Override
@@ -42,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
         fab = findViewById(R.id.fab);
         recyclerView = findViewById(R.id.recycler_view_for_task);
         progressBar = findViewById(R.id.progress_bar);
+        navigationView = findViewById(R.id.nav_view);
+
+        navigationView.setNavigationItemSelectedListener(this);
 
         mainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
         mainActivityViewModel.init();
@@ -87,33 +93,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.fb:
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/")));
+                break;
+            case R.id.github:
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/")));
+                break;
+        }
+        return true;
+    }
+
     private void initRecyclerView() {
         RecyclerView.LayoutManager linearLayoutManager = new LinearLayoutManager(this);
         adapter = new RecyclerAdapter(this, mainActivityViewModel.getTaskList().getValue());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }
