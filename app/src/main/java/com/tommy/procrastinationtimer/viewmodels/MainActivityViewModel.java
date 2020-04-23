@@ -20,7 +20,8 @@ public class MainActivityViewModel extends ViewModel {
             return;
         }
         repositoryService = TaskRepositoryService.getInstance();
-        taskList = repositoryService.getTasks();
+        taskList = new MutableLiveData<>();
+        taskList.setValue(repositoryService.getTasks());
     }
 
     public LiveData<List<Task>> getTaskList() {
@@ -50,7 +51,7 @@ public class MainActivityViewModel extends ViewModel {
         @Override
         protected void onPostExecute(Task newTask) {
             super.onPostExecute(newTask);
-            taskList.postValue(repositoryService.getTasks().getValue());
+            taskList.postValue(repositoryService.getTasks());
             isUpdated.postValue(false);
         }
 

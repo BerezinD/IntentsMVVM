@@ -1,6 +1,5 @@
 package com.tommy.procrastinationtimer.services;
 
-import androidx.lifecycle.MutableLiveData;
 import com.tommy.procrastinationtimer.models.Task;
 
 import java.util.ArrayList;
@@ -9,7 +8,11 @@ import java.util.List;
 public class TaskRepositoryService {
 
     private static TaskRepositoryService instance;
-    private ArrayList<Task> dataSet = new ArrayList<>();
+    private ArrayList<Task> dataSet;
+
+    private TaskRepositoryService() {
+        this.dataSet = new ArrayList<>();
+    }
 
     public static TaskRepositoryService getInstance() {
         if (instance == null) {
@@ -18,10 +21,8 @@ public class TaskRepositoryService {
         return instance;
     }
 
-    public MutableLiveData<List<Task>> getTasks() {
-        MutableLiveData<List<Task>> data = new MutableLiveData<>();
-        data.setValue(dataSet);
-        return data;
+    public List<Task> getTasks() {
+        return dataSet;
     }
 
     public void addTask(Task newTask) {
