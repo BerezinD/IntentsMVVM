@@ -18,7 +18,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.tommy.procrastinationtimer.R;
 import com.tommy.procrastinationtimer.adapters.RecyclerAdapter;
+import com.tommy.procrastinationtimer.models.Storage;
 import com.tommy.procrastinationtimer.models.Task;
+import com.tommy.procrastinationtimer.ui.settings.SettingsActivity;
 import com.tommy.procrastinationtimer.ui.tasks.CreateNewTaskActivity;
 import com.tommy.procrastinationtimer.viewmodels.MainActivityViewModel;
 
@@ -27,7 +29,9 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     public static final String EXTRA_TASK = "com.tommy.procrastinationtimer.models.Task";
+    public static final String STORAGE_TYPE = "com.tommy.procrastinationtimer.models.Storage";
     private static final int LAUNCH_NEW_ACTIVITY_CODE = 1;
+    private static Storage storageType = Storage.SHARED_PREF;
     private Toolbar toolbar;
     private FloatingActionButton fab;
     private RecyclerView recyclerView;
@@ -85,8 +89,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == LAUNCH_NEW_ACTIVITY_CODE) {
-            if (data != null && data.hasExtra(EXTRA_TASK)) {
-                mainActivityViewModel.addTask((Task) data.getParcelableExtra(EXTRA_TASK));
+            if (data != null) {
+                if (data.hasExtra(EXTRA_TASK)) {
+                    mainActivityViewModel.addTask((Task) data.getParcelableExtra(EXTRA_TASK));
+                }
+                if (data.hasExtra(STORAGE_TYPE)) {
+                    storageType = Enum.valueOf(Storage.class, data.getStringExtra(STORAGE_TYPE));
+                }
             }
         }
     }
@@ -95,6 +104,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         switch (id) {
+            case R.id.settings:
+                Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                intent.putExtra(STORAGE_TYPE, storageType.name());
+                startActivityForResult(intent, LAUNCH_NEW_ACTIVITY_CODE);
+                break;
             case R.id.fb:
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/")));
                 break;

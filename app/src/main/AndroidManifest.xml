@@ -23,7 +23,11 @@
                 android:parentActivityName=".ui.main.MainActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".ui.settings.SettingsActivity"/>
+        <activity
+                android:name=".ui.settings.SettingsActivity"
+                android:parentActivityName=".ui.main.MainActivity"
+                android:theme="@style/AppTheme"
+                />
     </application>
 
 </manifest>
