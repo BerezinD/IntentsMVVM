@@ -16,10 +16,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.tommy.procrastinationtimer.R;
+import com.tommy.procrastinationtimer.models.Task;
 
 import static android.text.TextUtils.isEmpty;
-import static com.tommy.procrastinationtimer.ui.main.MainActivity.EXTRA_TASK_TIME;
-import static com.tommy.procrastinationtimer.ui.main.MainActivity.EXTRA_TASK_TITLE;
+import static com.tommy.procrastinationtimer.ui.main.MainActivity.*;
 
 public class CreateNewTaskActivity extends AppCompatActivity {
 
@@ -60,8 +60,8 @@ public class CreateNewTaskActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (!isEmpty(addTimeInput.getText()) && !isEmpty(addTitleInput.getText())) {
-                    intent.putExtra(EXTRA_TASK_TITLE, addTitleInput.getText().toString());
-                    intent.putExtra(EXTRA_TASK_TIME, Long.parseLong(addTimeInput.getText().toString()));
+                    intent.putExtra(EXTRA_TASK, new Task(addTitleInput.getText().toString(),
+                            Long.parseLong(addTimeInput.getText().toString())));
                     setResult(RESULT_OK, intent);
                     finish();
                 }

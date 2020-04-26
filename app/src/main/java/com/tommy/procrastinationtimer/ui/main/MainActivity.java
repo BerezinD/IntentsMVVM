@@ -26,8 +26,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    public static final String EXTRA_TASK_TITLE = "com.tommy.procrastinationtimer.task.TITLE";
-    public static final String EXTRA_TASK_TIME = "com.tommy.procrastinationtimer.task.TIME";
+    public static final String EXTRA_TASK = "com.tommy.procrastinationtimer.models.Task";
     private static final int LAUNCH_NEW_ACTIVITY_CODE = 1;
     private Toolbar toolbar;
     private FloatingActionButton fab;
@@ -86,9 +85,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == LAUNCH_NEW_ACTIVITY_CODE) {
-            if (data != null && data.hasExtra(EXTRA_TASK_TITLE) && data.hasExtra(EXTRA_TASK_TIME)) {
-                Task task = new Task(data.getExtras().getString(EXTRA_TASK_TITLE), data.getExtras().getLong(EXTRA_TASK_TIME));
-                mainActivityViewModel.addTask(task);
+            if (data != null && data.hasExtra(EXTRA_TASK)) {
+                mainActivityViewModel.addTask((Task) data.getParcelableExtra(EXTRA_TASK));
             }
         }
     }
