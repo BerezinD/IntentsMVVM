@@ -1,9 +1,11 @@
 package com.tommy.procrastinationtimer.viewmodels;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import com.tommy.procrastinationtimer.models.Storage;
 import com.tommy.procrastinationtimer.models.Task;
 import com.tommy.procrastinationtimer.services.TaskRepositoryService;
 
@@ -15,11 +17,11 @@ public class MainActivityViewModel extends ViewModel {
     private TaskRepositoryService repositoryService;
     private MutableLiveData<Boolean> isUpdated = new MutableLiveData<>();
 
-    public void init() {
+    public void init(Context context) {
         if (taskList != null) {
             return;
         }
-        repositoryService = TaskRepositoryService.getInstance();
+        repositoryService = TaskRepositoryService.getInstance(context);
         taskList = new MutableLiveData<>();
         taskList.setValue(repositoryService.getTasks());
     }
@@ -41,6 +43,10 @@ public class MainActivityViewModel extends ViewModel {
         new SaveToDataBase().execute(newTask);
     }
 
+    public void changeSource(Storage newStorageType) {
+
+    }
+
     private class SaveToDataBase extends AsyncTask<Task, Integer, Task> {
         @Override
         protected void onPreExecute() {
@@ -59,10 +65,10 @@ public class MainActivityViewModel extends ViewModel {
         protected Task doInBackground(Task... tasks) {
             try {
                 Thread.sleep(2000);
+                repositoryService.addTask(tasks[0]);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            repositoryService.addTask(tasks[0]);
             return tasks[0];
         }
     }

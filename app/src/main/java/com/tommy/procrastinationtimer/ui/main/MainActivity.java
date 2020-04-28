@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Toolbar toolbar;
     private FloatingActionButton fab;
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter adapter;
+    private RecyclerAdapter adapter;
     private ProgressBar progressBar;
     private NavigationView navigationView;
     private MainActivityViewModel mainActivityViewModel;
@@ -53,11 +53,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 
         mainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
-        mainActivityViewModel.init();
+        mainActivityViewModel.init(this);
         mainActivityViewModel.getTaskList().observe(this, new Observer<List<Task>>() {
             @Override
             public void onChanged(List<Task> tasks) {
-                adapter.notifyDataSetChanged();
+                adapter.setTaskList(tasks);
             }
         });
         mainActivityViewModel.getIsUpdated().observe(this, new Observer<Boolean>() {
@@ -94,7 +94,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     mainActivityViewModel.addTask((Task) data.getParcelableExtra(EXTRA_TASK));
                 }
                 if (data.hasExtra(STORAGE_TYPE)) {
-                    storageType = Enum.valueOf(Storage.class, data.getStringExtra(STORAGE_TYPE));
+                    Storage newStorageType = Enum.valueOf(Storage.class, data.getStringExtra(STORAGE_TYPE));
+                    if (newStorageType != storageType) {
+                        mainActivityViewModel.changeSource(newStorageType);
+                        storageType = newStorageType;
+                    }
                 }
             }
         }

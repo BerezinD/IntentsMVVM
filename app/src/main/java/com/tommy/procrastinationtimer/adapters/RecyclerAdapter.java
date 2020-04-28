@@ -48,6 +48,11 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         return taskList.size();
     }
 
+    public void setTaskList(List<Task> tasks) {
+        this.taskList = tasks;
+        notifyDataSetChanged();
+    }
+
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView taskTitle;
         TextView taskTime;
