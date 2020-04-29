@@ -1,6 +1,7 @@
 package com.tommy.procrastinationtimer.ui.main;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -12,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -26,12 +28,14 @@ import com.tommy.procrastinationtimer.viewmodels.MainActivityViewModel;
 
 import java.util.List;
 
+import static com.tommy.procrastinationtimer.models.Storage.*;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     public static final String EXTRA_TASK = "com.tommy.procrastinationtimer.models.Task";
     public static final String STORAGE_TYPE = "com.tommy.procrastinationtimer.models.Storage";
     private static final int LAUNCH_NEW_ACTIVITY_CODE = 1;
-    private static Storage storageType = Storage.SHARED_PREF;
+    private static Storage storageType;
     private Toolbar toolbar;
     private FloatingActionButton fab;
     private RecyclerView recyclerView;
@@ -39,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ProgressBar progressBar;
     private NavigationView navigationView;
     private MainActivityViewModel mainActivityViewModel;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         initRecyclerView();
-
+        setupSharedPreferences();
         setSupportActionBar(toolbar);
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -110,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (id) {
             case R.id.settings:
                 Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-                intent.putExtra(STORAGE_TYPE, storageType.name());
+                intent.putExtra(STORAGE_TYPE, storageType.toString());
                 startActivityForResult(intent, LAUNCH_NEW_ACTIVITY_CODE);
                 break;
             case R.id.fb:
@@ -129,5 +134,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
+    }
+
+    private void setupSharedPreferences() {
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                String value = preferences.getString(getString(R.string.key_pref_settings), SHARED_PREF.toString());
+                if (value != null) {
+                    setStorageType(value);
+                }
+            }
+        });
+        setStorageType(preferences.getString(getString(R.string.key_pref_settings), SHARED_PREF.toString()));
+    }
+
+    private void setStorageType(String type) {
+        if (SHARED_PREF.toString().equals(type)
+                || INTERNAL.toString().equals(type)
+                || EXTERNAL.toString().equals(type)
+                || SQL.toString().equals(type)) {
+            storageType = Storage.valueOf(type);
+        } else storageType = SHARED_PREF;
     }
 }
