@@ -1,7 +1,10 @@
-package com.tommy.procrastinationtimer.storage;
+package com.tommy.procrastinationtimer.storage.database;
 
+import android.content.Context;
+import androidx.room.Room;
 import com.tommy.procrastinationtimer.models.Task;
 import com.tommy.procrastinationtimer.services.Mapper;
+import com.tommy.procrastinationtimer.storage.TaskStorage;
 import com.tommy.procrastinationtimer.storage.dao.task.TaskDao;
 import com.tommy.procrastinationtimer.storage.dao.task.TaskDb;
 import com.tommy.procrastinationtimer.storage.mapper.fromDb.TaskFromDb;
@@ -11,12 +14,26 @@ import java.util.List;
 
 public class TaskStorageImpl implements TaskStorage {
 
+    private static TaskStorage instance;
     private TaskDao dao;
     private Mapper<TaskDb, Task> mapperToTask = new TaskFromDb();
     private Mapper<Task, TaskDb> mapperToDb = new TaskToDb();
 
-    public TaskStorageImpl(TaskDao dao) {
-        this.dao = dao;
+    private TaskStorageImpl(Context context) {
+        this.dao = Room.databaseBuilder(
+                context.getApplicationContext(),
+                TaskDatabase.class,
+                TaskDatabase.DB_FILE_NAME)
+                .allowMainThreadQueries()
+                .build()
+                .getTaskDao();
+    }
+
+    public static TaskStorage getInstance(Context context) {
+        if (instance == null) {
+            instance = new TaskStorageImpl(context);
+        }
+        return instance;
     }
 
     @Override

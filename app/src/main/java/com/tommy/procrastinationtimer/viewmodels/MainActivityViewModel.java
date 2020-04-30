@@ -17,11 +17,11 @@ public class MainActivityViewModel extends ViewModel {
     private TaskRepositoryService repositoryService;
     private MutableLiveData<Boolean> isUpdated = new MutableLiveData<>();
 
-    public void init(Context context) {
+    public void init(Storage storageType, Context context) {
         if (taskList != null) {
             return;
         }
-        repositoryService = TaskRepositoryService.getInstance(context);
+        repositoryService = TaskRepositoryService.getInstance(storageType, context);
         taskList = new MutableLiveData<>();
         taskList.setValue(repositoryService.getTasks());
     }
@@ -43,8 +43,8 @@ public class MainActivityViewModel extends ViewModel {
         new SaveToDataBase().execute(newTask);
     }
 
-    public void changeSource(Storage newStorageType) {
-
+    public void changeSource(Storage newStorageType, Context context) {
+        repositoryService.changeStorage(newStorageType, context);
     }
 
     private class SaveToDataBase extends AsyncTask<Task, Integer, Task> {

@@ -56,9 +56,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView = findViewById(R.id.nav_view);
 
         navigationView.setNavigationItemSelectedListener(this);
+        setupSharedPreferences();
 
         mainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
-        mainActivityViewModel.init(this);
+        mainActivityViewModel.init(storageType, this);
         mainActivityViewModel.getTaskList().observe(this, new Observer<List<Task>>() {
             @Override
             public void onChanged(List<Task> tasks) {
@@ -78,7 +79,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         initRecyclerView();
-        setupSharedPreferences();
         setSupportActionBar(toolbar);
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -98,13 +98,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if (data.hasExtra(EXTRA_TASK)) {
                     mainActivityViewModel.addTask((Task) data.getParcelableExtra(EXTRA_TASK));
                 }
-                if (data.hasExtra(STORAGE_TYPE)) {
-                    Storage newStorageType = Enum.valueOf(Storage.class, data.getStringExtra(STORAGE_TYPE));
-                    if (newStorageType != storageType) {
-                        mainActivityViewModel.changeSource(newStorageType);
-                        storageType = newStorageType;
-                    }
-                }
             }
         }
     }
@@ -116,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.settings:
                 Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
                 intent.putExtra(STORAGE_TYPE, storageType.toString());
-                startActivityForResult(intent, LAUNCH_NEW_ACTIVITY_CODE);
+                startActivity(intent);
                 break;
             case R.id.fb:
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/")));
@@ -141,13 +134,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         preferences.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                String value = preferences.getString(getString(R.string.key_pref_settings), SHARED_PREF.toString());
+                String value = preferences.getString(getString(R.string.key_pref_settings), SQL.toString());
                 if (value != null) {
                     setStorageType(value);
+                    mainActivityViewModel.changeSource(storageType, getApplicationContext());
                 }
             }
         });
-        setStorageType(preferences.getString(getString(R.string.key_pref_settings), SHARED_PREF.toString()));
+        setStorageType(preferences.getString(getString(R.string.key_pref_settings), SQL.toString()));
     }
 
     private void setStorageType(String type) {
@@ -156,6 +150,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 || EXTERNAL.toString().equals(type)
                 || SQL.toString().equals(type)) {
             storageType = Storage.valueOf(type);
-        } else storageType = SHARED_PREF;
+        } else storageType = SQL;
     }
 }
