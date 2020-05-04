@@ -5,6 +5,8 @@ import com.tommy.procrastinationtimer.models.Storage;
 import com.tommy.procrastinationtimer.models.Task;
 import com.tommy.procrastinationtimer.storage.TaskStorage;
 import com.tommy.procrastinationtimer.storage.database.TaskStorageImpl;
+import com.tommy.procrastinationtimer.storage.disk.TaskStorageExternalImpl;
+import com.tommy.procrastinationtimer.storage.disk.TaskStorageInternalImpl;
 import com.tommy.procrastinationtimer.storage.preferences.TaskStoragePrefImpl;
 
 import java.util.List;
@@ -43,6 +45,12 @@ public class TaskRepositoryService {
 
     public void changeStorage(Storage storageType, Context context) {
         switch (storageType) {
+            case INTERNAL:
+                storage = TaskStorageInternalImpl.getInstance(context);
+                break;
+            case EXTERNAL:
+                storage = TaskStorageExternalImpl.getInstance(context);
+                break;
             case SHARED_PREF:
                 storage = TaskStoragePrefImpl.getInstance(context);
                 break;
@@ -54,6 +62,10 @@ public class TaskRepositoryService {
 
     private static TaskStorage getStorage(Storage storage, Context context) {
         switch (storage) {
+            case INTERNAL:
+                return TaskStorageInternalImpl.getInstance(context);
+            case EXTERNAL:
+                return TaskStorageExternalImpl.getInstance(context);
             case SHARED_PREF:
                 return TaskStoragePrefImpl.getInstance(context);
             case SQL:
