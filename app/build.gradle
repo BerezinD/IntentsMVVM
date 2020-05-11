@@ -34,10 +34,12 @@ dependencies {
     def activity_version = '1.2.0-alpha03'
     def room_version = "2.2.5"
     def preference_version = "1.1.1"
+    def logger_version = "4.7.1"
     implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
     implementation "androidx.activity:activity:$activity_version"
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
     implementation "androidx.preference:preference:$preference_version"
+    implementation "com.jakewharton.timber:timber:$logger_version"
 }

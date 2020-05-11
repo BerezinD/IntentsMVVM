@@ -5,6 +5,7 @@ import android.os.Environment;
 import android.widget.Toast;
 import com.google.gson.Gson;
 import com.tommy.procrastinationtimer.storage.TaskStorage;
+import timber.log.Timber;
 
 import java.io.File;
 
@@ -27,7 +28,9 @@ public class TaskStorageExternalImpl extends TaskStorageFile {
 
     private File getStorageFile(Context context) {
         if (!isExternalStorageWritable()) {
-            Toast.makeText(context, "Cannot permit a file access", Toast.LENGTH_SHORT).show();
+            String noFileAccess = "Cannot permit a file access";
+            Timber.e(noFileAccess);
+            Toast.makeText(context, noFileAccess, Toast.LENGTH_SHORT).show();
         }
         return new File(context.getExternalFilesDir(null), FILE_NAME_EXT);
     }

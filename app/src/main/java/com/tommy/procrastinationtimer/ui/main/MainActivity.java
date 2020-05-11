@@ -25,6 +25,7 @@ import com.tommy.procrastinationtimer.models.Task;
 import com.tommy.procrastinationtimer.ui.settings.SettingsActivity;
 import com.tommy.procrastinationtimer.ui.tasks.CreateNewTaskActivity;
 import com.tommy.procrastinationtimer.viewmodels.MainActivityViewModel;
+import timber.log.Timber;
 
 import java.util.List;
 
@@ -94,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == LAUNCH_NEW_ACTIVITY_CODE) {
+            Timber.i("Called Activity ends up with result code %d and request code %d", resultCode, requestCode);
             if (data != null) {
                 if (data.hasExtra(EXTRA_TASK)) {
                     mainActivityViewModel.addTask((Task) data.getParcelableExtra(EXTRA_TASK));
@@ -135,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
                 String value = preferences.getString(getString(R.string.key_pref_settings), SQL.toString());
+                Timber.i("Changed storage to %s", value);
                 if (value != null) {
                     setStorageType(value);
                     mainActivityViewModel.changeSource(storageType, getApplicationContext());
