@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+            android:title="Save to...">
+        <ListPreference
+                android:title="Choose storage where you would like to save your tasks"
+                android:key="@string/key_pref_settings"
+                android:defaultValue="SQL"
+                android:entries="@array/list_array"
+                android:entryValues="@array/list_values"
+                android:icon="@android:drawable/ic_menu_save"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>

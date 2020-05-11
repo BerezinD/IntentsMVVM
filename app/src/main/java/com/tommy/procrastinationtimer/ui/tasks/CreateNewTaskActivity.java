@@ -1,22 +1,25 @@
 package com.tommy.procrastinationtimer.ui.tasks;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.tommy.procrastinationtimer.R;
+import com.tommy.procrastinationtimer.models.Task;
 
 import static android.text.TextUtils.isEmpty;
-import static com.tommy.procrastinationtimer.ui.main.MainActivity.EXTRA_TASK_TIME;
-import static com.tommy.procrastinationtimer.ui.main.MainActivity.EXTRA_TASK_TITLE;
+import static com.tommy.procrastinationtimer.ui.main.MainActivity.*;
 
 public class CreateNewTaskActivity extends AppCompatActivity {
 
@@ -34,58 +37,59 @@ public class CreateNewTaskActivity extends AppCompatActivity {
         int wrapContent = ViewGroup.LayoutParams.WRAP_CONTENT;
         final Intent intent = new Intent();
 
-        TextView header = new TextView(this);
-        setCommonParamsToTextView(header, wrapContent, wrapContent, Gravity.CENTER_HORIZONTAL, "Add a new Task", null);
-        header.setTextSize(45f);
-
-        TextView addTitle = new TextView(this);
-        setCommonParamsToTextView(addTitle, wrapContent, wrapContent, Gravity.START, "Add a title:", null);
-        addTitle.setTextSize(30f);
-
         final TextInputEditText addTitleInput = new TextInputEditText(this);
         setCommonParamsToTextView(addTitleInput, matchParent, wrapContent, Gravity.START, null, "type a name of task...");
         addTitleInput.setInputType(InputType.TYPE_CLASS_TEXT);
 
-        TextView addTime = new TextView(this);
-        setCommonParamsToTextView(addTime, wrapContent, wrapContent, Gravity.START, "Add time in minutes:", null);
-        addTime.setTextSize(30f);
-
         final TextInputEditText addTimeInput = new TextInputEditText(this);
-        setCommonParamsToTextView(addTimeInput, matchParent, wrapContent, Gravity.START, null, "type a name of task...");
+        setCommonParamsToTextView(addTimeInput, matchParent, wrapContent, Gravity.START, null, "type a time of task in minutes...");
         addTimeInput.setInputType(InputType.TYPE_CLASS_NUMBER);
 
-        Button okButton = new Button(this);
-        okButton.setText("SAVE");
-        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(matchParent, wrapContent);
-        buttonParams.gravity = Gravity.BOTTOM;
-        buttonParams.setMargins(5, 5, 5, 5);
-        okButton.setLayoutParams(buttonParams);
-        okButton.setOnClickListener(new View.OnClickListener() {
+        final View stubView = new View(this);
+        LinearLayout.LayoutParams stubParams = new LinearLayout.LayoutParams(matchParent, 0, 1);
+        stubView.setLayoutParams(stubParams);
+
+        final FloatingActionButton saveButton = new FloatingActionButton(this);
+        final int margin16 = getPixelsFromDP(this, 16);
+        LinearLayout.LayoutParams saveButtonParams = new LinearLayout.LayoutParams(wrapContent, wrapContent);
+        saveButtonParams.gravity = Gravity.BOTTOM | Gravity.END;
+        saveButtonParams.setMargins(margin16, margin16, margin16, margin16);
+        saveButton.setLayoutParams(saveButtonParams);
+        saveButton.setImageResource(android.R.drawable.ic_menu_save);
+        saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!isEmpty(addTimeInput.getText()) && !isEmpty(addTitleInput.getText())) {
-                    intent.putExtra(EXTRA_TASK_TITLE, addTitleInput.getText().toString());
-                    intent.putExtra(EXTRA_TASK_TIME, Long.parseLong(addTimeInput.getText().toString()));
+                    intent.putExtra(EXTRA_TASK, new Task(addTitleInput.getText().toString(),
+                            Long.parseLong(addTimeInput.getText().toString())));
                     setResult(RESULT_OK, intent);
                     finish();
                 }
             }
         });
 
-        layout.addView(header);
-        layout.addView(addTitle);
         layout.addView(addTitleInput);
-        layout.addView(addTime);
         layout.addView(addTimeInput);
-        layout.addView(okButton);
+        layout.addView(stubView);
+        layout.addView(saveButton);
     }
 
     private void setCommonParamsToTextView(TextView viewToSet, int viewWidth, int viewHeight, int gravity, String text, String hint) {
+        final int margin5 = getPixelsFromDP(this, 5);
         viewToSet.setText(text);
         viewToSet.setHint(hint);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(viewWidth, viewHeight);
         params.gravity = gravity;
-        params.setMargins(5, 5, 5, 5);
+        params.setMargins(margin5, margin5, margin5, margin5);
         viewToSet.setLayoutParams(params);
+    }
+
+    private int getPixelsFromDP(Context context, int dp) {
+        Resources r = context.getResources();
+        return (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dp,
+                r.getDisplayMetrics()
+        );
     }
 }

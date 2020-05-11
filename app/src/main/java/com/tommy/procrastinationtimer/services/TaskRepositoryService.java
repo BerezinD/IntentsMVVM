@@ -1,30 +1,76 @@
 package com.tommy.procrastinationtimer.services;
 
-import androidx.lifecycle.MutableLiveData;
+import android.content.Context;
+import com.tommy.procrastinationtimer.models.Storage;
 import com.tommy.procrastinationtimer.models.Task;
+import com.tommy.procrastinationtimer.storage.TaskStorage;
+import com.tommy.procrastinationtimer.storage.database.TaskStorageImpl;
+import com.tommy.procrastinationtimer.storage.disk.TaskStorageExternalImpl;
+import com.tommy.procrastinationtimer.storage.disk.TaskStorageInternalImpl;
+import com.tommy.procrastinationtimer.storage.preferences.TaskStoragePrefImpl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TaskRepositoryService {
 
     private static TaskRepositoryService instance;
-    private ArrayList<Task> dataSet = new ArrayList<>();
+    private TaskStorage storage;
 
-    public static TaskRepositoryService getInstance() {
+    private TaskRepositoryService() {
+    }
+
+    public static TaskRepositoryService getInstance(Storage storageType, Context context) {
         if (instance == null) {
             instance = new TaskRepositoryService();
+            instance.storage = getStorage(storageType, context);
         }
         return instance;
     }
 
-    public MutableLiveData<List<Task>> getTasks() {
-        MutableLiveData<List<Task>> data = new MutableLiveData<>();
-        data.setValue(dataSet);
-        return data;
+    public List<Task> getTasks() {
+        return storage.getAll();
     }
 
     public void addTask(Task newTask) {
-        dataSet.add(newTask);
+        storage.insert(newTask);
+    }
+
+    public void deleteTask(Task task) {
+        storage.delete(task);
+    }
+
+    public void deleteAll() {
+        storage.deleteAll();
+    }
+
+    public void changeStorage(Storage storageType, Context context) {
+        switch (storageType) {
+            case INTERNAL:
+                storage = TaskStorageInternalImpl.getInstance(context);
+                break;
+            case EXTERNAL:
+                storage = TaskStorageExternalImpl.getInstance(context);
+                break;
+            case SHARED_PREF:
+                storage = TaskStoragePrefImpl.getInstance(context);
+                break;
+            case SQL:
+                storage = TaskStorageImpl.getInstance(context);
+                break;
+        }
+    }
+
+    private static TaskStorage getStorage(Storage storage, Context context) {
+        switch (storage) {
+            case INTERNAL:
+                return TaskStorageInternalImpl.getInstance(context);
+            case EXTERNAL:
+                return TaskStorageExternalImpl.getInstance(context);
+            case SHARED_PREF:
+                return TaskStoragePrefImpl.getInstance(context);
+            case SQL:
+                return TaskStorageImpl.getInstance(context);
+        }
+        return TaskStorageImpl.getInstance(context);
     }
 }

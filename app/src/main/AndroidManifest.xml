@@ -3,6 +3,7 @@
           package="com.tommy.procrastinationtimer">
 
     <application
+            android:name=".app.App"
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
@@ -22,7 +23,13 @@
                 android:parentActivityName=".ui.main.MainActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".ui.settings.SettingsActivity"/>
+        <activity
+                android:name=".ui.settings.SettingsActivity"
+                android:parentActivityName=".ui.main.MainActivity"
+                android:theme="@style/AppTheme"
+                />
     </application>
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
 </manifest>

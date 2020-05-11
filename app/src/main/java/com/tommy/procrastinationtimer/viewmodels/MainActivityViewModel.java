@@ -1,9 +1,11 @@
 package com.tommy.procrastinationtimer.viewmodels;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import com.tommy.procrastinationtimer.models.Storage;
 import com.tommy.procrastinationtimer.models.Task;
 import com.tommy.procrastinationtimer.services.TaskRepositoryService;
 
@@ -15,12 +17,13 @@ public class MainActivityViewModel extends ViewModel {
     private TaskRepositoryService repositoryService;
     private MutableLiveData<Boolean> isUpdated = new MutableLiveData<>();
 
-    public void init() {
+    public void init(Storage storageType, Context context) {
         if (taskList != null) {
             return;
         }
-        repositoryService = TaskRepositoryService.getInstance();
-        taskList = repositoryService.getTasks();
+        repositoryService = TaskRepositoryService.getInstance(storageType, context);
+        taskList = new MutableLiveData<>();
+        taskList.setValue(repositoryService.getTasks());
     }
 
     public LiveData<List<Task>> getTaskList() {
@@ -40,6 +43,10 @@ public class MainActivityViewModel extends ViewModel {
         new SaveToDataBase().execute(newTask);
     }
 
+    public void changeSource(Storage newStorageType, Context context) {
+        repositoryService.changeStorage(newStorageType, context);
+    }
+
     private class SaveToDataBase extends AsyncTask<Task, Integer, Task> {
         @Override
         protected void onPreExecute() {
@@ -50,7 +57,7 @@ public class MainActivityViewModel extends ViewModel {
         @Override
         protected void onPostExecute(Task newTask) {
             super.onPostExecute(newTask);
-            taskList.postValue(repositoryService.getTasks().getValue());
+            taskList.postValue(repositoryService.getTasks());
             isUpdated.postValue(false);
         }
 
@@ -58,10 +65,10 @@ public class MainActivityViewModel extends ViewModel {
         protected Task doInBackground(Task... tasks) {
             try {
                 Thread.sleep(2000);
+                repositoryService.addTask(tasks[0]);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            repositoryService.addTask(tasks[0]);
             return tasks[0];
         }
     }

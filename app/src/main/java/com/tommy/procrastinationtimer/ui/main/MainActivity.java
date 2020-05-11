@@ -1,38 +1,50 @@
 package com.tommy.procrastinationtimer.ui.main;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.tommy.procrastinationtimer.R;
 import com.tommy.procrastinationtimer.adapters.RecyclerAdapter;
+import com.tommy.procrastinationtimer.models.Storage;
 import com.tommy.procrastinationtimer.models.Task;
+import com.tommy.procrastinationtimer.ui.settings.SettingsActivity;
 import com.tommy.procrastinationtimer.ui.tasks.CreateNewTaskActivity;
 import com.tommy.procrastinationtimer.viewmodels.MainActivityViewModel;
+import timber.log.Timber;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+import static com.tommy.procrastinationtimer.models.Storage.*;
 
-    public static final String EXTRA_TASK_TITLE = "com.tommy.procrastinationtimer.task.TITLE";
-    public static final String EXTRA_TASK_TIME = "com.tommy.procrastinationtimer.task.TIME";
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    public static final String EXTRA_TASK = "com.tommy.procrastinationtimer.models.Task";
+    public static final String STORAGE_TYPE = "com.tommy.procrastinationtimer.models.Storage";
     private static final int LAUNCH_NEW_ACTIVITY_CODE = 1;
+    private static Storage storageType;
     private Toolbar toolbar;
     private FloatingActionButton fab;
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter adapter;
+    private RecyclerAdapter adapter;
     private ProgressBar progressBar;
+    private NavigationView navigationView;
     private MainActivityViewModel mainActivityViewModel;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,13 +54,17 @@ public class MainActivity extends AppCompatActivity {
         fab = findViewById(R.id.fab);
         recyclerView = findViewById(R.id.recycler_view_for_task);
         progressBar = findViewById(R.id.progress_bar);
+        navigationView = findViewById(R.id.nav_view);
+
+        navigationView.setNavigationItemSelectedListener(this);
+        setupSharedPreferences();
 
         mainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
-        mainActivityViewModel.init();
+        mainActivityViewModel.init(storageType, this);
         mainActivityViewModel.getTaskList().observe(this, new Observer<List<Task>>() {
             @Override
             public void onChanged(List<Task> tasks) {
-                adapter.notifyDataSetChanged();
+                adapter.setTaskList(tasks);
             }
         });
         mainActivityViewModel.getIsUpdated().observe(this, new Observer<Boolean>() {
@@ -64,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         initRecyclerView();
-
         setSupportActionBar(toolbar);
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -80,11 +95,32 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == LAUNCH_NEW_ACTIVITY_CODE) {
-            if (data != null && data.hasExtra(EXTRA_TASK_TITLE) && data.hasExtra(EXTRA_TASK_TIME)) {
-                Task task = new Task(data.getExtras().getString(EXTRA_TASK_TITLE), data.getExtras().getLong(EXTRA_TASK_TIME));
-                mainActivityViewModel.addTask(task);
+            Timber.i("Called Activity ends up with result code %d and request code %d", resultCode, requestCode);
+            if (data != null) {
+                if (data.hasExtra(EXTRA_TASK)) {
+                    mainActivityViewModel.addTask((Task) data.getParcelableExtra(EXTRA_TASK));
+                }
             }
         }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.settings:
+                Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                intent.putExtra(STORAGE_TYPE, storageType.toString());
+                startActivity(intent);
+                break;
+            case R.id.fb:
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/")));
+                break;
+            case R.id.github:
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/")));
+                break;
+        }
+        return true;
     }
 
     private void initRecyclerView() {
@@ -95,25 +131,28 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    private void setupSharedPreferences() {
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                String value = preferences.getString(getString(R.string.key_pref_settings), SQL.toString());
+                Timber.i("Changed storage to %s", value);
+                if (value != null) {
+                    setStorageType(value);
+                    mainActivityViewModel.changeSource(storageType, getApplicationContext());
+                }
+            }
+        });
+        setStorageType(preferences.getString(getString(R.string.key_pref_settings), SQL.toString()));
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    private void setStorageType(String type) {
+        if (SHARED_PREF.toString().equals(type)
+                || INTERNAL.toString().equals(type)
+                || EXTERNAL.toString().equals(type)
+                || SQL.toString().equals(type)) {
+            storageType = Storage.valueOf(type);
+        } else storageType = SQL;
     }
 }

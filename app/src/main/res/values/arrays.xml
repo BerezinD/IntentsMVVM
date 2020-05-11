@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="list_array">
+        <item>Shared Pref</item>
+        <item>External</item>
+        <item>Internal</item>
+        <item>SQL</item>
+    </string-array>
+
+    <string-array name="list_values">
+        <item>SHARED_PREF</item>
+        <item>EXTERNAL</item>
+        <item>INTERNAL</item>
+        <item>SQL</item>
+    </string-array>
+</resources>

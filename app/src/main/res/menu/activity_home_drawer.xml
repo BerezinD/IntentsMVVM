@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+                android:id="@+id/home"
+                android:icon="@android:drawable/btn_default"
+                android:title="Home" />
+        <item
+                android:id="@+id/settings"
+                android:icon="@android:drawable/ic_menu_preferences"
+                android:title="Settings" />
+    </group>
+
+    <item android:title="Social">
+        <menu>
+            <item
+                    android:id="@+id/fb"
+                    android:icon="@drawable/ic_facebook"
+                    android:title="Facebook" />
+            <item
+                    android:id="@+id/github"
+                    android:icon="@drawable/ic_github"
+                    android:title="Github" />
+        </menu>
+    </item>
+
+</menu>
